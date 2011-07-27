@@ -12,7 +12,19 @@ else()
   set( CMAKE_INSTALL_PREFIX "c:/HeeksCAD" )
 endif()
 set( BUILD_STARTED_IN_RIGHT_DIR "true" )  #used in src/CMakeLists.txt to print a message
+if("${CMAKE_EXTRA_GENERATOR}" STREQUAL "CodeBlocks")
+   if(UNIX)
+      	# To create a code blocks project invoke this command in a terminal while in the heekscad folder
+        #cmake . -G "CodeBlocks - Unix Makefiles"
+      	#the code blocks debugger runs the executable relative from where the source was downloaded /heekscad/bin
+     	#the heekscad executable is expecting icons bitmaps to be in a relative location that doesn't match the source tree
+        #that condition is addressed later 
+        message ("A code Blocks CPB is being generated. SO RUNINPLACE is automatically invoked")   
+      	add_definitions(-DRUNINPLACE)
+    endif()
 
+
+endif()
 add_definitions ( -Wall )
 FIND_PACKAGE( wxWidgets REQUIRED COMPONENTS base core gl )
 
@@ -75,10 +87,72 @@ set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libopencascade-ocaf-6.3.0 | libopencascade-
 
 include(CPack)
 
-#---------- put subdirs down here so that the package version vars above are visible to them -----------
+#---------- put subdirs down here so that package version vars above are visible to them -----------
 add_subdirectory( interface )
 add_subdirectory( tinyxml )
 add_subdirectory( sketchsolve/src )
-add_subdirectory( translations )
 add_subdirectory( src )  #needs libraries from other subdirs, so it goes last
+
+if("${CMAKE_EXTRA_GENERATOR}" STREQUAL "CodeBlocks")
+   if(UNIX)
+      	# The local bin directory was created when the src directory was added.
+      	# If a code blocks project is being generated.
+        # RUNNINPLACE is being automatically invoked.a
+        # RUNNINPLACE expectes icons and bitmaps to be below the executable that the code blocks debugger uses.
+
+        # JT Todo This really should be called from a macro which I haven't figured out how to do yet 
+        message ("Adding symlinks to /bin to enable for RUNINPLACE") 
+	file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/icons)	
+	###############################################################################################        
+	message ("Adding heekscad icons")  
+        ###############################################################################################
+	file(GLOB COPY_FILES  RELATIVE 
+		${CMAKE_SOURCE_DIR}/icons
+		${CMAKE_SOURCE_DIR}/icons/*.png)
+        foreach(FILENAME ${COPY_FILES})
+		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/icons/${FILENAME}
+        		${CMAKE_BINARY_DIR}/bin/icons/${FILENAME})	
+	endforeach(FILENAME)
+        
+	###############################################################################################
+	message ("Adding heekscnc icons")
+        ###############################################################################################
+        file(GLOB COPY_HEEKSCNC_FILES  RELATIVE 
+		${CMAKE_SOURCE_DIR}/heekscnc/icons 
+		${CMAKE_SOURCE_DIR}/heekscnc/icons/*.png)
+       	foreach(FILENAME ${COPY_HEEKSCNC_FILES})
+    		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/heekscnc/icons/${FILENAME}
+        		${CMAKE_BINARY_DIR}/bin/icons/${FILENAME})
+	endforeach(FILENAME)  
+
+
+	file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/bitmaps)	
+	###############################################################################################        
+	message ("Adding heekscad bitmaps")  
+        ###############################################################################################
+	file(GLOB COPY_FILES  RELATIVE 
+		${CMAKE_SOURCE_DIR}/bitmaps
+		${CMAKE_SOURCE_DIR}/bitmaps/*.png)
+        foreach(FILENAME ${COPY_FILES})
+		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/bitmaps/${FILENAME}
+        		${CMAKE_BINARY_DIR}/bin/bitmaps/${FILENAME})	
+	endforeach(FILENAME)
+        
+	###############################################################################################
+	message ("Adding heekscnc bitmaps")
+        ###############################################################################################
+        file(GLOB COPY_HEEKSCNC_FILES  RELATIVE 
+		${CMAKE_SOURCE_DIR}/heekscnc/bitmaps 
+		${CMAKE_SOURCE_DIR}/heekscnc/bitmaps/*.png)
+       	foreach(FILENAME ${COPY_HEEKSCNC_FILES})  
+    		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+			${CMAKE_SOURCE_DIR}/heekscnc/bitmaps/${FILENAME}
+        		${CMAKE_BINARY_DIR}/bin/bitmaps/${FILENAME})
+	endforeach(FILENAME
+    endif()
+endif()
+
 
