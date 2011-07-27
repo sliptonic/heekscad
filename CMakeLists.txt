@@ -93,6 +93,7 @@ add_subdirectory( tinyxml )
 add_subdirectory( sketchsolve/src )
 add_subdirectory( src )  #needs libraries from other subdirs, so it goes last
 
+
 if("${CMAKE_EXTRA_GENERATOR}" STREQUAL "CodeBlocks")
    if(UNIX)
       	# The local bin directory was created when the src directory was added.
@@ -151,7 +152,7 @@ if("${CMAKE_EXTRA_GENERATOR}" STREQUAL "CodeBlocks")
     		execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
 			${CMAKE_SOURCE_DIR}/heekscnc/bitmaps/${FILENAME}
         		${CMAKE_BINARY_DIR}/bin/bitmaps/${FILENAME})
-	endforeach(FILENAME
+	endforeach(FILENAME)
     endif()
 endif()
 
